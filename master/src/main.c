@@ -3,6 +3,7 @@
 /*Variables Externas*/
 t_config * configuracion = NULL;
 t_log * bitacora_del_sistema = NULL;
+t_list * workers = NULL;
 
 int main(int argc, char* argv[]) 
 {

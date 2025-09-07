@@ -25,9 +25,15 @@ typedef enum
 	MENSAJE = 1,
 	PAQUETE = 2,
 	NEW_QUERY = 3,
-	END_QUERY = 4
+	END_QUERY = 4,
+	NEW_MASTER =5
 }t_operacion;
 
+typedef struct
+{
+	int socket_worket;
+	char * id_worker;
+}t_worker;
 
 typedef struct
 {

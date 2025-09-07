@@ -10,6 +10,7 @@ t_config * configuracion = NULL;
 t_log * bitacora_del_sistema = NULL;
 
 /*CLA: Argumentos por Linea de Comandos*/
+//./bin/query_control configuracion archivo_query 15
 
 int main(int argc, char* argv[]) 
 {
@@ -19,7 +20,7 @@ int main(int argc, char* argv[])
 
 	if (argc != 1 + CANTIDAD_ARGUMENTOS)//Valida que se ingrese el ejecutable + 3 argumentos por el CLA
 	{
-		fprintf (stderr, "Error: El ejecutable requiere 3 argumentos por linea de comandos");
+		fprintf (stderr, "Error: El ejecutable requiere 3 argumentos por linea de comandos\n");
 		return EXIT_FAILURE;
 	}
 	/*Abre el archivo de configuracion pasado por el CLA*/
@@ -33,6 +34,7 @@ int main(int argc, char* argv[])
     			"## Conexión al Master exitosa. IP: %s, Puerto: %s", 
     			config_get_string_value (configuracion, "IP_MASTER"), config_get_string_value (configuracion, "PUERTO_MASTER"));
     printf ("Se establecio la conexion al servidor a traves del socket_master: %d\n", socket_query_control);
+	//operacion | longitud cadena longitud cadena ...
     paquete = crear_paquete (NEW_QUERY);
     agregar_a_paquete (paquete,  (void *) argv[ARCHIVO_DE_CONSULTAS], strlen (argv[ARCHIVO_DE_CONSULTAS]) + 1/*por el '\0'*/);
     agregar_a_paquete (paquete,  (void *) argv[PRIORIDAD_DE_CONSULTA], strlen (argv[PRIORIDAD_DE_CONSULTA]) + 1/*por el '\0'*/);

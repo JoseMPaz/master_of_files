@@ -42,7 +42,7 @@ int crear_socket (t_conexion tipo_conexion, const char * ip, const char * puerto
 		
 	return conexion;
 }
-
+//operacion | longitud cadena longitud cadena ...
 void * atender_cliente (void * argumento)
 {
 	int * socket = (int *) argumento;
@@ -73,8 +73,11 @@ void * atender_cliente (void * argumento)
 			enviar_paquete (paquete, *socket);
 			
 			destruir_paquete (paquete);
+			//transmitir list_get(lista, 0) al worker
 
 			break;
+		case NEW_MASTER:
+			//cuando se conecte un cliente worker, su socket e id agregarlos a una lista
 			
 		case DESCONEXION:
 				//log_error(logger, "el cliente se desconecto. Terminando servidor");
@@ -123,7 +126,7 @@ void solicitar_atencion (int socket_cliente, char * ip_servidor, char * puerto_s
 
 	return;
 }
-
+//operacion | longitud flujo
 t_paquete * crear_paquete (t_operacion operacion)
 {
 	t_paquete * paquete = NULL; 
