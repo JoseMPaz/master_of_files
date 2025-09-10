@@ -4,16 +4,21 @@
 t_config * configuracion = NULL;
 t_log * bitacora_del_sistema = NULL;
 t_list * workers = NULL;
+int socket_escucha;//Por medio de este socket se escuche peticiones de todo aquel que sepa el ip y puerto, en este caso las query_control y los worker
+
+void cerrar_servidor(int signum);
+
+
 
 int main(int argc, char* argv[]) 
 {
-	int socket_escucha;//Por medio de este socket se escuche peticiones de todo aquel que sepa el ip y puerto, en este caso las query_control y los worker
-	
     saludar("master");//Sera removido
+    
+    signal(SIGINT, cerrar_servidor);
     /*Abre el archivo de configuracion que esta en la misma carpeta que el archivo makefile*/
-    configuracion = config_create ("configuracion");
+    configuracion = config_create ("master.config");
     /*Abre el archivo que contiene el registro de eventos con el nivel que indica el archivo de configuracion*/
-    bitacora_del_sistema = log_create ("registro_de_eventos.log", "MASTER", false, (t_log_level) config_get_int_value (configuracion, "LOG_LEVEL"));
+    bitacora_del_sistema = log_create ("master.log", "MASTER", false, (t_log_level) config_get_int_value (configuracion, "LOG_LEVEL"));
     /*Master no requiere que se ingresen argumentos por el CLA*/
     socket_escucha = crear_socket (SERVIDOR, NULL, config_get_string_value (configuracion, "PUERTO_ESCUCHA"));
     printf ("socket_escucha: %d\n", socket_escucha);
@@ -31,8 +36,26 @@ int main(int argc, char* argv[])
     pthread_exit (NULL);//Para esperar que terminen de procesar los hilos
     
     /*Liberacion de recursos*/
-    close (socket_escucha);
+    if (socket_escucha > 0)
+    	close (socket_escucha);
     config_destroy (configuracion);
     log_destroy (bitacora_del_sistema);	
     return 0;
+}
+
+void cerrar_servidor(int signum) 
+{
+    if (bitacora_del_sistema) 
+    {
+        log_destroy(bitacora_del_sistema);
+    }
+    if (configuracion) 
+    {
+        config_destroy(configuracion);
+    }
+    if (socket_escucha >= 0) 
+    {
+        close(socket_escucha);
+    }
+    exit(0);
 }

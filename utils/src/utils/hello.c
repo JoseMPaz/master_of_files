@@ -20,12 +20,13 @@ int crear_socket (t_conexion tipo_conexion, const char * ip, const char * puerto
 		
 	if (tipo_conexion == CLIENTE)
 	{
-		err = getaddrinfo ( ip , puerto , &hints , &server_info );
+		err = getaddrinfo ( ip , puerto , &hints , &server_info );//Pide memoria para server_info
 		conexion = socket ( server_info->ai_family, server_info->ai_socktype , server_info->ai_protocol);
+		freeaddrinfo(server_info);//devuelve memoria de server_info
 	}
 	if (tipo_conexion == SERVIDOR)
 	{	
-		err = getaddrinfo ( NULL , puerto , &hints , &server_info );
+		err = getaddrinfo ( NULL , puerto , &hints , &server_info );//Pide memoria para server_info
 		conexion = socket ( server_info->ai_family, server_info->ai_socktype , server_info->ai_protocol);
 		
 		err = setsockopt ( conexion , SOL_SOCKET , SO_REUSEPORT , &(int){1} , sizeof(int) );
@@ -36,32 +37,34 @@ int crear_socket (t_conexion tipo_conexion, const char * ip, const char * puerto
     		puts("No se pudo hacer listen");
     		abort();
 		}
+		freeaddrinfo(server_info);//devuelve memoria de server_info
 	}
 
-	freeaddrinfo(server_info);
+	
 		
 	return conexion;
 }
 //operacion | longitud cadena longitud cadena ...
 void * atender_cliente (void * argumento)
 {
-	int * socket = (int *) argumento;
+	int socket = *(int*)argumento;
+	free (argumento);
 	   
-	int operacion = recibir_operacion (*socket);
+	int operacion = recibir_operacion (socket);
 		
 	switch (operacion) 
 	{
-		case MENSAJE:
+		//case MENSAJE:
 				//recibir_mensaje(*cliente, logger);
-			break;
-		case PAQUETE:
+			//break;
+		//case PAQUETE:
 				//lista = recibir_paquete(cliente_fd);
 				//log_info(logger, "Me llegaron los siguientes valores:\n");
 				//list_iterate(lista, (void*) iterator);
-			break;
+			//break;
 		case NEW_QUERY:
 			printf ("LLego un new query\n");
-			t_list * lista = recibir_carga_util (*socket);
+			t_list * lista = recibir_carga_util (socket);
 			
 			printf ("El primer argumento que llego es: %s\n", (char *) list_get(lista, 0));
 			printf ("El segundo argumento que llego es: %s\n", (char *) list_get(lista, 1));
@@ -70,9 +73,11 @@ void * atender_cliente (void * argumento)
 			
 			t_paquete * paquete = crear_paquete (END_QUERY);
 			
-			enviar_paquete (paquete, *socket);
+			enviar_paquete (paquete, socket);
 			
 			destruir_paquete (paquete);
+			close(socket);
+
 			//transmitir list_get(lista, 0) al worker
 
 			break;
@@ -88,8 +93,7 @@ void * atender_cliente (void * argumento)
 				//log_warning(logger,"Operacion desconocida. No quieras meter la pata");
 			break;
 	}
-	close(*socket);
-	free (socket);
+	
 	return NULL;
 }	
 	
@@ -116,14 +120,14 @@ void solicitar_atencion (int socket_cliente, char * ip_servidor, char * puerto_s
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
-	getaddrinfo(ip_servidor, puerto_servidor, &hints, &server_info);//llamada al sistema
+	getaddrinfo(ip_servidor, puerto_servidor, &hints, &server_info);//Pide memoria para server_info
 	
 	if ( connect(socket_cliente, server_info->ai_addr, server_info->ai_addrlen) == -1)
 	{
 		fprintf (stderr, "%s", "No se logro establecer la conexion hacia el servidor ");
 		exit (EXIT_FAILURE);
 	}
-
+	freeaddrinfo(server_info);//devuelve memoria de server_info
 	return;
 }
 //operacion | longitud flujo
@@ -241,7 +245,6 @@ t_list * recibir_carga_util (int socket)
 	
 	return lista;
 }
-
 
 
 

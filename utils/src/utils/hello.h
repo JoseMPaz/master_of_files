@@ -13,6 +13,8 @@
 #include <commons/collections/list.h>
 #include <pthread.h>
 #include <commons/string.h>
+#include <signal.h>
+
 
 typedef enum
 {
@@ -124,5 +126,8 @@ void enviar_paquete (t_paquete * paquete, int socket);
 * @return Lista de cadenas
 */
 t_list * recibir_carga_util (int socket);
+
+
+
 
 #endif

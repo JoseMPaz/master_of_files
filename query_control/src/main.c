@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
     	return EXIT_FAILURE;
     }
     /*Abre el archivo que contiene el registro de eventos con el nivel que indica el archivo de configuracion*/
-    bitacora_del_sistema = log_create ("registro_de_eventos.log", "QUERY_CONTROL", false, (t_log_level) config_get_int_value (configuracion, "LOG_LEVEL"));
+    bitacora_del_sistema = log_create ("query_control.log", "QUERY_CONTROL", false, (t_log_level) config_get_int_value (configuracion, "LOG_LEVEL"));
     /*Crea el socket como cliente hacia el servidor master*/
     socket_query_control = crear_socket (CLIENTE, config_get_string_value (configuracion, "IP_MASTER"), config_get_string_value (configuracion, "PUERTO_MASTER"));
     solicitar_atencion (socket_query_control, config_get_string_value (configuracion, "IP_MASTER"), config_get_string_value (configuracion, "PUERTO_MASTER"));
@@ -38,10 +38,10 @@ int main(int argc, char* argv[])
     			"## Conexión al Master exitosa. IP: %s, Puerto: %s", 
     			config_get_string_value (configuracion, "IP_MASTER"), config_get_string_value (configuracion, "PUERTO_MASTER"));
     printf ("Se establecio la conexion al servidor a traves del socket_master: %d\n", socket_query_control);
-	//operacion | longitud cadena longitud cadena ...
+	//operacion | longitud_carga_util longitud_1 cadena_1 longitud_2 cadena_2 ... longitud_N cadena_N
     paquete = crear_paquete (NEW_QUERY);
-    agregar_a_paquete (paquete,  (void *) string_duplicate(argv[ARCHIVO_DE_CONSULTAS]), strlen (argv[ARCHIVO_DE_CONSULTAS]) + 1/*por el '\0'*/);
-    agregar_a_paquete (paquete,  (void *) string_duplicate(argv[PRIORIDAD_DE_CONSULTA]), strlen (argv[PRIORIDAD_DE_CONSULTA]) + 1/*por el '\0'*/);
+    agregar_a_paquete (paquete,  (void *) argv[ARCHIVO_DE_CONSULTAS], strlen (argv[ARCHIVO_DE_CONSULTAS]) + 1/*por el '\0'*/);
+    agregar_a_paquete (paquete,  (void *) argv[PRIORIDAD_DE_CONSULTA], strlen (argv[PRIORIDAD_DE_CONSULTA]) + 1/*por el '\0'*/);
     
     enviar_paquete (paquete, socket_query_control);
     do
