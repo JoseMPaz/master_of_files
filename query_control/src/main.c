@@ -24,7 +24,11 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 	/*Abre el archivo de configuracion pasado por el CLA*/
-    configuracion = config_create (argv[ARCHIVO_DE_CONFIGURACION]);
+    if ((configuracion = config_create(argv[ARCHIVO_DE_CONFIGURACION])) == NULL)
+    {
+    	fprintf(stderr, "%s\n", "Error: No se pudo abrir el archivo de configuración");
+    	return EXIT_FAILURE;
+    }
     /*Abre el archivo que contiene el registro de eventos con el nivel que indica el archivo de configuracion*/
     bitacora_del_sistema = log_create ("registro_de_eventos.log", "QUERY_CONTROL", false, (t_log_level) config_get_int_value (configuracion, "LOG_LEVEL"));
     /*Crea el socket como cliente hacia el servidor master*/
@@ -36,8 +40,8 @@ int main(int argc, char* argv[])
     printf ("Se establecio la conexion al servidor a traves del socket_master: %d\n", socket_query_control);
 	//operacion | longitud cadena longitud cadena ...
     paquete = crear_paquete (NEW_QUERY);
-    agregar_a_paquete (paquete,  (void *) argv[ARCHIVO_DE_CONSULTAS], strlen (argv[ARCHIVO_DE_CONSULTAS]) + 1/*por el '\0'*/);
-    agregar_a_paquete (paquete,  (void *) argv[PRIORIDAD_DE_CONSULTA], strlen (argv[PRIORIDAD_DE_CONSULTA]) + 1/*por el '\0'*/);
+    agregar_a_paquete (paquete,  (void *) string_duplicate(argv[ARCHIVO_DE_CONSULTAS]), strlen (argv[ARCHIVO_DE_CONSULTAS]) + 1/*por el '\0'*/);
+    agregar_a_paquete (paquete,  (void *) string_duplicate(argv[PRIORIDAD_DE_CONSULTA]), strlen (argv[PRIORIDAD_DE_CONSULTA]) + 1/*por el '\0'*/);
     
     enviar_paquete (paquete, socket_query_control);
     do

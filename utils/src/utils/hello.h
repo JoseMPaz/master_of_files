@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <commons/collections/list.h>
 #include <pthread.h>
+#include <commons/string.h>
 
 typedef enum
 {
