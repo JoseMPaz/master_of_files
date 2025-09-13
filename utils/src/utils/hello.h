@@ -53,9 +53,6 @@ typedef struct
 	t_carga_util * carga_util;
 }t_paquete;
 
-extern t_list* workers;   // declaración, NO definición
-
-
 /**
 * @brief Imprime un saludo por consola
 * @param quien Módulo desde donde se llama a la función
@@ -75,7 +72,7 @@ int crear_socket (t_conexion tipo_conexion, const char * ip, const char * puerto
 * @param argumento: socket_cliente
 * @return Por ahora no devuelve nada, pero en caso sea necesario lo hara
 */
-void * atender_cliente (void * argumento);
+
 
 /**
 * @brief recibe la operacion del socket

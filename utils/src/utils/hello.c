@@ -44,62 +44,7 @@ int crear_socket (t_conexion tipo_conexion, const char * ip, const char * puerto
 		
 	return conexion;
 }
-//operacion | longitud cadena longitud cadena ...
-void * atender_cliente (void * argumento)
-{
-	int socket = *(int*)argumento;
-	free (argumento);
-	   
-	int operacion = recibir_operacion (socket);
-		
-	switch (operacion) 
-	{
-		case NEW_QUERY:
-			t_list * lista = recibir_carga_util (socket);//Recibe los argumentos que envio el query control 
-			if (list_is_empty(workers))//No hay workers conectados
-			{
-				list_destroy_and_destroy_elements (lista, free);
-				t_paquete * paquete = crear_paquete (END_QUERY);
-				agregar_a_paquete (paquete,  (void *) NO_HAY_WORKER_CONECTADOS, strlen (NO_HAY_WORKER_CONECTADOS) + 1/*por el '\0'*/);
-				enviar_paquete (paquete, socket);
-				destruir_paquete (paquete);
-				close(socket);
-				return NULL;
-			}
-		
-			/*t_list * lista = recibir_carga_util (socket);
-			
-			
-			printf ("El primer argumento que llego es: %s\n", (char *) list_get(lista, 0));
-			printf ("El segundo argumento que llego es: %s\n", (char *) list_get(lista, 1));
-			
-			list_destroy_and_destroy_elements (lista, free);
-			
-			t_paquete * paquete = crear_paquete (END_QUERY);
-			
-			enviar_paquete (paquete, socket);
-			
-			destruir_paquete (paquete);
-			close(socket);
 
-			//transmitir list_get(lista, 0) al worker*/
-
-			break;
-		case NEW_MASTER:
-			//cuando se conecte un cliente worker, su socket e id agregarlos a una lista
-			
-		case DESCONEXION:
-				//log_error(logger, "el cliente se desconecto. Terminando servidor");
-				//free(cliente);
-				//free(parametros);
-			return NULL;
-		default:
-				//log_warning(logger,"Operacion desconocida. No quieras meter la pata");
-			break;
-	}
-	
-	return NULL;
-}	
 	
 t_operacion recibir_operacion(int socket) 
 {
