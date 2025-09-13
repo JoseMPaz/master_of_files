@@ -17,8 +17,6 @@
 
 #define NO_HAY_WORKER_CONECTADOS "No hay workers conectados para atender la query"
 
-extern t_list * workers;
-
 typedef enum
 {
 	CLIENTE = 0,
@@ -55,8 +53,8 @@ typedef struct
 	t_carga_util * carga_util;
 }t_paquete;
 
-
-
+/*Declaro la lista de workers para contener sus sockets*/
+t_list * workers = NULL;
 
 /**
 * @brief Imprime un saludo por consola
