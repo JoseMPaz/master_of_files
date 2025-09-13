@@ -3,7 +3,7 @@
 /*Variables Externas*/
 t_config * configuracion = NULL;
 t_log * bitacora_del_sistema = NULL;
-extern t_list * workers;
+t_list* workers = NULL;   // definición real
 
 int socket_escucha;//Por medio de este socket se escuchan peticiones de todo aquel que sepa el ip y puerto del mater, en este caso las query_control y los worker
 

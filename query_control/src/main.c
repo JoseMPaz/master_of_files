@@ -26,9 +26,9 @@ int main(int argc, char* argv[])
 	}
 	
 	/*Abre el archivo de configuracion pasado por el CLA*/
-    if ((configuracion = config_create(argv[ARCHIVO_DE_CONFIGURACION])) == NULL)
+    if ((configuracion = config_create (argv[ARCHIVO_DE_CONFIGURACION])) == NULL)
     {
-    	fprintf(stderr, "%s\n", "Error: No se pudo abrir el archivo de configuración");
+    	fprintf (stderr, "%s\n", "Error: No se pudo abrir el archivo de configuración");
     	return EXIT_FAILURE;
     }
     

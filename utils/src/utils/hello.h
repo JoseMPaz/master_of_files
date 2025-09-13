@@ -53,8 +53,8 @@ typedef struct
 	t_carga_util * carga_util;
 }t_paquete;
 
-/*Declaro la lista de workers para contener sus sockets*/
-t_list * workers = NULL;
+extern t_list* workers;   // declaración, NO definición
+
 
 /**
 * @brief Imprime un saludo por consola
