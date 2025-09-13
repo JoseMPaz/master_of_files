@@ -15,6 +15,9 @@
 #include <commons/string.h>
 #include <signal.h>
 
+#define NO_HAY_WORKER_CONECTADOS "No hay workers conectados para atender la query"
+
+extern t_list * workers;
 
 typedef enum
 {
@@ -29,7 +32,9 @@ typedef enum
 	PAQUETE = 2,
 	NEW_QUERY = 3,
 	END_QUERY = 4,
-	NEW_MASTER =5
+	NEW_MASTER =5,
+	NEW_WORKER = 6,
+	RECIBIR_QUERY = 7
 }t_operacion;
 
 typedef struct
@@ -49,6 +54,9 @@ typedef struct
 	t_operacion operacion;
 	t_carga_util * carga_util;
 }t_paquete;
+
+
+
 
 /**
 * @brief Imprime un saludo por consola

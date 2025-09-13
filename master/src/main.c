@@ -4,15 +4,17 @@
 t_config * configuracion = NULL;
 t_log * bitacora_del_sistema = NULL;
 t_list * workers = NULL;
-int socket_escucha;//Por medio de este socket se escuche peticiones de todo aquel que sepa el ip y puerto, en este caso las query_control y los worker
+int socket_escucha;//Por medio de este socket se escuchan peticiones de todo aquel que sepa el ip y puerto del mater, en este caso las query_control y los worker
+
 
 void cerrar_servidor(int signum);
-
 
 
 int main(int argc, char* argv[]) 
 {
     saludar("master");//Sera removido
+    int socket_temporal;
+    workers = list_create();
     
     signal(SIGINT, cerrar_servidor);
     /*Abre el archivo de configuracion que esta en la misma carpeta que el archivo makefile*/
@@ -22,16 +24,21 @@ int main(int argc, char* argv[])
     /*Master no requiere que se ingresen argumentos por el CLA*/
     socket_escucha = crear_socket (SERVIDOR, NULL, config_get_string_value (configuracion, "PUERTO_ESCUCHA"));
     printf ("socket_escucha: %d\n", socket_escucha);
+    printf ("Cantidad de worker: %d\n", list_size(workers));
     
     while(true)
     {
     	pthread_t hilo_de_atencion;
-    	int * socket_de_atencion = (int *) malloc (sizeof(int));//La funcion dentro del hilo debe liberar esta peticion de memoria
-    	*socket_de_atencion = accept (socket_escucha, NULL, NULL);//Se queda aca esperando peticiones porque accept es bloqueante
-    	//Registra en el archivo de eventos que hubo una nueva conexion
-    	printf ("Nuevo cliente conectado\n");
-    	pthread_create (&hilo_de_atencion, NULL, atender_cliente, (void *) socket_de_atencion);
-    	pthread_detach(hilo_de_atencion);
+    	/*socket_temporal se usa porue ante un control+c se evita pedir memoria que no se puede liberar porque el programa murio*/
+    	socket_temporal = accept (socket_escucha, NULL, NULL);//Se queda aca esperando peticiones porque accept es bloqueante
+    	if (socket_temporal >= 0)
+    	{
+    		int * socket_de_atencion = (int *) malloc (sizeof(int));//La funcion dentro del hilo debe liberar esta peticion de memoria
+    		*socket_de_atencion = socket_temporal;
+    		printf ("Nuevo cliente conectado\n");
+    		pthread_create (&hilo_de_atencion, NULL, atender_cliente, (void *) socket_de_atencion);
+    		pthread_detach(hilo_de_atencion);
+    	}   	
     }
     pthread_exit (NULL);//Para esperar que terminen de procesar los hilos
     
@@ -59,3 +66,4 @@ void cerrar_servidor(int signum)
     }
     exit(0);
 }
+

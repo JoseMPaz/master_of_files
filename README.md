@@ -26,3 +26,6 @@ valgrind --tool=helgrind ./tu_programa [args]
 👉 Ejemplo:
 
 valgrind --tool=helgrind ./servidor
+
+Dudas:
+Los socket entre worker y master es solo 1, o ne necesita otro para interruptir?

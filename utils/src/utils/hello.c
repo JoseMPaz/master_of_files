@@ -54,17 +54,21 @@ void * atender_cliente (void * argumento)
 		
 	switch (operacion) 
 	{
-		//case MENSAJE:
-				//recibir_mensaje(*cliente, logger);
-			//break;
-		//case PAQUETE:
-				//lista = recibir_paquete(cliente_fd);
-				//log_info(logger, "Me llegaron los siguientes valores:\n");
-				//list_iterate(lista, (void*) iterator);
-			//break;
 		case NEW_QUERY:
-			printf ("LLego un new query\n");
-			t_list * lista = recibir_carga_util (socket);
+			t_list * lista = recibir_carga_util (socket);//Recibe los argumentos que envio el query control 
+			if (list_is_empty(workers))//No hay workers conectados
+			{
+				list_destroy_and_destroy_elements (lista, free);
+				t_paquete * paquete = crear_paquete (END_QUERY);
+				agregar_a_paquete (paquete,  (void *) NO_HAY_WORKER_CONECTADOS, strlen (NO_HAY_WORKER_CONECTADOS) + 1/*por el '\0'*/);
+				enviar_paquete (paquete, socket);
+				destruir_paquete (paquete);
+				close(socket);
+				return NULL;
+			}
+		
+			/*t_list * lista = recibir_carga_util (socket);
+			
 			
 			printf ("El primer argumento que llego es: %s\n", (char *) list_get(lista, 0));
 			printf ("El segundo argumento que llego es: %s\n", (char *) list_get(lista, 1));
@@ -78,7 +82,7 @@ void * atender_cliente (void * argumento)
 			destruir_paquete (paquete);
 			close(socket);
 
-			//transmitir list_get(lista, 0) al worker
+			//transmitir list_get(lista, 0) al worker*/
 
 			break;
 		case NEW_MASTER:
@@ -189,13 +193,13 @@ void * serializar_paquete (t_paquete * paquete, int bytes_a_enviar)
 	//void *memcpy(void *destino, const void * origen, size_t size);
 	memcpy (mensaje_serializado + desplazamiento, &(paquete->operacion), sizeof (paquete->operacion) );
 	desplazamiento += sizeof (paquete->operacion);
-	if (paquete->operacion != END_QUERY)
-	{
+	//if (paquete->operacion != END_QUERY)
+	//{
 		memcpy ( mensaje_serializado + desplazamiento, &(paquete->carga_util->longitud), sizeof (paquete->carga_util->longitud) );
 		desplazamiento += sizeof (paquete->carga_util->longitud);
 	
 		memcpy ( mensaje_serializado + desplazamiento, paquete->carga_util->flujo, paquete->carga_util->longitud );
-	}
+	//}
 
 	//desplazamiento += paquete->carga_util->longitud; //No se usa
 
@@ -206,10 +210,10 @@ void enviar_paquete (t_paquete * paquete, int socket)
 {
 	int bytes_a_enviar;
 	void * mensaje_serializado = NULL;
-	if (paquete->operacion != END_QUERY)
+	//if (paquete->operacion != END_QUERY)
 		bytes_a_enviar = sizeof (paquete->operacion) + sizeof (paquete->carga_util->longitud) +  paquete->carga_util->longitud;
-	else
-		bytes_a_enviar = sizeof (paquete->operacion);
+	//else
+		//bytes_a_enviar = sizeof (paquete->operacion);
 	mensaje_serializado = serializar_paquete (paquete, bytes_a_enviar);
 	/*ssize_t send(int sock, const void * mensaje_serializado, size_t len, int flags);*/
 	send (socket, mensaje_serializado, bytes_a_enviar, 0);
