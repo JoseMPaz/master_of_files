@@ -4,9 +4,14 @@
 /*Variables Externas*/
 t_config * configuracion = NULL;
 t_log * bitacora_del_sistema = NULL;
-t_list * workers = NULL;   // definición real
+t_list * workers = NULL;   
+t_list * queries_ready = NULL;
+t_list * queries_execution = NULL;
 pthread_mutex_t mutex_workers = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_id_global = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_queries = PTHREAD_MUTEX_INITIALIZER;
 int socket_escucha;//Por medio de este socket se escuchan peticiones de todo aquel que sepa el ip y puerto del mater, en este caso las query_control y los worker
+int id_global = 0;
 
 int main(int argc, char* argv[]) 
 {
@@ -22,7 +27,8 @@ int main(int argc, char* argv[])
 	}
     
     workers = list_create();
-    
+    queries_ready = list_create ();
+    queries_execution = list_create ();
     signal (SIGINT, cerrar_servidor);
     
     /*Abre el archivo de configuracion que esta en la misma carpeta que el archivo makefile*/

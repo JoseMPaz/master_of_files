@@ -2,7 +2,7 @@
 
 #define ARCHIVO_DE_CONFIGURACION 1
 #define ID_WORKER 2
-#define CANTIDAD_ARGUMENTOS 2
+#define CANTIDAD_ARGUMENTOS 2 //Archivo de configuracion e Identificador del worker
 
 /*Variables Externas*/
 t_config * configuracion = NULL;
@@ -16,8 +16,9 @@ int main(int argc, char* argv[])
 	int operacion;
 	
     saludar("worker");
-    	
-	if (argc != 1 + CANTIDAD_ARGUMENTOS)//Valida que se ingrese el ejecutable + 2 argumentos por el CLA
+    
+    //Valida que se ingrese el ejecutable + 2 argumentos por el CLA
+	if (argc != 1 + CANTIDAD_ARGUMENTOS)
 	{
 		fprintf (stderr, "Error: El ejecutable requiere 2 argumentos por linea de comandos\n");
 		return EXIT_FAILURE;
@@ -32,12 +33,15 @@ int main(int argc, char* argv[])
     
 	/*Abre el archivo que contiene el registro de eventos con el nivel que indica el archivo de configuracion*/
     bitacora_del_sistema = log_create ("query_control.log", "WORKER", false, (t_log_level) config_get_int_value (configuracion, "LOG_LEVEL"));
+    
     /*Crea un socker para conectarse al storage*/
 	socket_worker_a_storage = crear_socket (CLIENTE	, config_get_string_value(configuracion, "IP_STORAGE")
 													, config_get_string_value(configuracion, "PUERTO_STORAGE"));
+													
 	/*Crea un socker para conectarse al master*/
 	socket_worker_a_master = crear_socket (CLIENTE	, config_get_string_value (configuracion, "IP_MASTER")
 													, config_get_string_value (configuracion, "PUERTO_MASTER"));
+													
 	/*Se establece la conexion con storage*/
 	solicitar_atencion (socket_worker_a_storage, config_get_string_value (configuracion, "IP_STORAGE"), config_get_string_value (configuracion, "PUERTO_STORAGE"));
 	/*Se establece la conexion con master*/
