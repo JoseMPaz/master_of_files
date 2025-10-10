@@ -3,21 +3,17 @@
 
 #include <utils/hello.h>
 
-#define POSICION_ID 0
+#define TAMANO_DE_BLOQUE "450"
+
 
 extern t_list* workers; 
 extern int socket_escucha;
 extern t_config * configuracion;
 extern t_log * bitacora_del_sistema;
 
-typedef struct
-{
-	char id[100];
-	int socket;
-	bool esta_libre;
-}t_worker;
 
-void * gestionar_query_worker (void * argumento);
-void cerrar_servidor(int signum);
+
+void * gestionar_worker (void * argumento);
+
  
 #endif

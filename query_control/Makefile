@@ -14,14 +14,14 @@ endef
 
 ################################################################################
 
-# Project name
-NAME=$(shell pwd | xargs -I{} basename "{}")
+# Project name (personalizado)
+NAME = query
 
 # Set compiler and archiver options
-CC=gcc
-AR=ar
-ARFLAGS=rcs
-MAKE=make --no-print-directory
+CC = gcc
+AR = ar
+ARFLAGS = rcs
+MAKE = make --no-print-directory
 
 # Set prerrequisites
 SRCS_C += $(shell find src -iname "*.c")
@@ -41,11 +41,11 @@ RUNDIRS = $(SHARED_LIBPATHS:%=$(shell pwd)/%/lib)
 # Set intermediate objects
 OBJS = $(patsubst src/%.c,obj/%.o,$(SRCS_C))
 
-# Set output
-OUT = $(call outname,$(NAME))
+# Set output binary
+OUT = bin/$(NAME)
 
 # Set test folder
-TESTS_DIR=tests
+TESTS_DIR = tests
 
 # Set test prerrequisites
 TESTS_C += $(shell find $(TESTS_DIR)/ -iname "*.c" 2> /dev/null)
@@ -54,7 +54,7 @@ TESTS_H += $(shell find $(TESTS_DIR)/ -iname "*.h" 2> /dev/null)
 # Set test intermediate objects
 TEST_OBJS = $(filter-out $(TEST_EXCLUDE), $(TESTS_C)) $(patsubst src/%.c,obj/%.o,$(filter-out $(TEST_EXCLUDE), $(SRCS_C)))
 
-# Set test binary targets
+# Set test binary target (personalizado también)
 TEST = bin/$(NAME)_tests
 
 .PHONY: all

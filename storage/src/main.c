@@ -1,4 +1,4 @@
-#include <utils/hello.h>
+#include "gestion.h"
 
 /*Variables Externas*/
 t_config * configuracion = NULL;
@@ -12,10 +12,19 @@ int main(int argc, char* argv[])
     saludar("storage");
     signal(SIGINT, cerrar_servidor);
     int socket_temporal;
+    
+    if (argc != 2)
+	{
+		fprintf (stderr, "Debe ingresar ejecución y ruta_archivo_configuracion");
+		return EXIT_FAILURE;
+	}
+    
     /*Abre el archivo de configuracion que esta en la misma carpeta que el archivo makefile*/
     configuracion = config_create ("storage.config");
      /*Abre el archivo que contiene el registro de eventos con el nivel que indica el archivo de configuracion*/
 	bitacora_del_sistema = log_create ("registro_de_eventos.log", "STORAGE", true, (t_log_level) config_get_int_value (configuracion, "LOG_LEVEL"));
+	
+	
 	
 	socket_escucha = crear_socket (SERVIDOR, NULL, config_get_string_value (configuracion, "PUERTO_ESCUCHA"));
 	printf ("socket_escucha: %d\n", socket_escucha);
@@ -30,7 +39,7 @@ int main(int argc, char* argv[])
     		int * socket_de_atencion = (int *) malloc (sizeof(int));//La funcion dentro del hilo debe liberar esta peticion de memoria
     		*socket_de_atencion = socket_temporal;
     		printf ("Nuevo cliente conectado\n");
-    		pthread_create (&hilo_de_atencion, NULL, atender_cliente, (void *) socket_de_atencion);
+    		pthread_create (&hilo_de_atencion, NULL, gestionar_worker, (void *) socket_de_atencion);
     		pthread_detach(hilo_de_atencion);
     	} 
     

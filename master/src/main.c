@@ -11,8 +11,14 @@ int main(int argc, char* argv[])
 {
     saludar("master");//Sera removido
     int socket_temporal;
-    workers = list_create();
+        
+    if (argc != 2)
+	{
+		fprintf (stderr, "Debe ingresar ejecutable y ruta_archivo_configuracion");
+		return EXIT_FAILURE;
+	}
     
+    workers = list_create();
     signal(SIGINT, cerrar_servidor);
     /*Abre el archivo de configuracion que esta en la misma carpeta que el archivo makefile*/
     configuracion = config_create ("master.config");

@@ -61,8 +61,8 @@ int main(int argc, char* argv[])
 		{
 			case END_QUERY:
 				t_list * lista = recibir_carga_util (socket_query_control);//Recibe el motivo de fin de consulta
-				
-				printf ("Motivo de desconexión: %s\n", (char *) list_get (lista, MOTIVO_DE_FIN_DE_QUERY));
+				/* Log mínimo y obligatorio 4 */
+				log_trace (bitacora_del_sistema, "## Query Finalizada - %s", (char *) list_get (lista, MOTIVO_DE_FIN_DE_QUERY));
 				list_destroy_and_destroy_elements (lista, free);
 				close(socket_query_control);				
 				break;
@@ -76,10 +76,7 @@ int main(int argc, char* argv[])
 				//log_warning(logger,"Operacion desconocida. No quieras meter la pata");
 			break;
 		}
-    }while (operacion != END_QUERY);
-    
-    
-    
+    }while (operacion != END_QUERY);   
     
     destruir_paquete (paquete);
     config_destroy (configuracion);

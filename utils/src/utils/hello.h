@@ -30,16 +30,10 @@ typedef enum
 	PAQUETE = 2,
 	NEW_QUERY = 3,
 	END_QUERY = 4,
-	NEW_MASTER =5,
-	NEW_WORKER = 6,
-	RECIBIR_QUERY = 7
+	NEW_WORKER = 5,
+	RECIBIR_QUERY = 6,
+	SIZE_BLOCK
 }t_operacion;
-
-typedef struct
-{
-	int socket_worket;
-	char * id_worker;
-}t_worker;
 
 typedef struct
 {

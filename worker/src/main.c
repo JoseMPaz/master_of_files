@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 	
     saludar("worker");
     	
-	if (argc != 1 + CANTIDAD_ARGUMENTOS)//Valida que se ingrese el ejecutable + 3 argumentos por el CLA
+	if (argc != 1 + CANTIDAD_ARGUMENTOS)//Valida que se ingrese el ejecutable + 2 argumentos por el CLA
 	{
 		fprintf (stderr, "Error: El ejecutable requiere 2 argumentos por linea de comandos\n");
 		return EXIT_FAILURE;
@@ -41,20 +41,23 @@ int main(int argc, char* argv[])
 	solicitar_atencion (socket_worker_a_storage, config_get_string_value (configuracion, "IP_STORAGE"), config_get_string_value (configuracion, "PUERTO_STORAGE"));
 	/*Se establece la conexion con master*/
 	solicitar_atencion (socket_worker_a_master, config_get_string_value (configuracion, "IP_MASTER"), config_get_string_value (configuracion, "PUERTO_MASTER"));
-	
+	/*Envio al master sus datos para que lo agende si necesita que realicen trabajo*/
 	paquete = crear_paquete (NEW_WORKER);
 	agregar_a_paquete (paquete,  (void *) argv[ID_WORKER], strlen (argv[ID_WORKER]) + 1/*por el '\0'*/);
-	
 	/*Envia el saludo al master para que lo agrege a una lista mediante su ID_WORKER y cuando requiera master le haga consultas a worker*/
 	enviar_paquete (paquete, socket_worker_a_master);
 	
 	while (true)
 	{
 		operacion = recibir_operacion(socket_worker_a_master); 
+		printf ("Recibe operacion desde master");
 		switch (operacion) 
 		{
 			case RECIBIR_QUERY:
-			/*Aca hay que leer argumento de la operacion*/
+				t_list * lista = recibir_carga_util (socket_worker_a_master);//Recibe la ruta de la query
+				printf ("El worker recibio la ruta de la query: %s", (char *) list_get (lista, 0));
+				list_destroy_and_destroy_elements (lista, free);
+				
 				break;
 			
 			case DESCONEXION:
