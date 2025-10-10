@@ -5,11 +5,12 @@
 t_config * configuracion = NULL;
 t_log * bitacora_del_sistema = NULL;
 t_list * workers = NULL;   // definición real
+pthread_mutex_t mutex_workers = PTHREAD_MUTEX_INITIALIZER;
 int socket_escucha;//Por medio de este socket se escuchan peticiones de todo aquel que sepa el ip y puerto del mater, en este caso las query_control y los worker
 
 int main(int argc, char* argv[]) 
 {
-	/*socket_temporal se usa porue ante un control+c se evita pedir memoria que no se puede liberar porque el programa murio*/
+	/*socket_temporal se usa porque ante un control+c se evita pedir memoria que no se puede liberar porque el programa murio*/
     int socket_temporal;
     
     saludar("master");

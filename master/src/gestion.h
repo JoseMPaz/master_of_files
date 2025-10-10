@@ -6,10 +6,11 @@
 #define POSICION_ID 0
 #define NO_HAY_WORKER_CONECTADOS "No se pudo atender debido a que no hay workers conectados"
 
-extern t_list* workers; 
+extern t_list * workers; 
 extern int socket_escucha;
 extern t_config * configuracion;
 extern t_log * bitacora_del_sistema;
+extern pthread_mutex_t mutex_workers;
 
 typedef struct
 {

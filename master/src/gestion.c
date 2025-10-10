@@ -24,18 +24,23 @@ void * gestionar_query_worker (void * socket_de_atencion)
 			new_worker->socket = socket;
 			new_worker->esta_libre = true;
 			
+			pthread_mutex_lock(&mutex_workers);
 			list_add (workers, (void *) new_worker);
-			
-			printf ("Cantidad de worker: %d\n", list_size(workers));
-			
+			pthread_mutex_unlock(&mutex_workers);
+						
 			list_destroy_and_destroy_elements (lista, free);
 			lista = NULL;
 			break;
 		case NEW_QUERY:
 			lista = recibir_carga_util (socket); //Recibe la carga util enviado por el query: path_query y prioridad 
 			
+			pthread_mutex_lock(&mutex_workers);
+			int cant_workers = list_size(workers);
+			pthread_mutex_unlock(&mutex_workers);
 			
-			if ( list_size (workers) == 0)/*No hay workers conectados*/
+			printf ("NEW_QUERY -> Cantidad de worker: %d\n", list_size(workers));
+			
+			if ( cant_workers == 0)/*No hay workers conectados*/
 			{
 				t_paquete * paquete = crear_paquete (END_QUERY);//Finaliza la consulta y le indica que no dispone de workers
 				
@@ -59,7 +64,7 @@ void * gestionar_query_worker (void * socket_de_atencion)
 				enviar_paquete (paquete, socket);
 				destruir_paquete (paquete);
 				paquete = crear_paquete (END_QUERY);
-				agregar_a_paquete (paquete,  (void *) NO_HAY_WORKER_CONECTADOS, strlen (NO_HAY_WORKER_CONECTADOS) + 1/*por el '\0'*/);
+				agregar_a_paquete (paquete,  (void *) "Fin de Consulta", strlen ("Fin de Consulta") + 1/*por el '\0'*/);
 				enviar_paquete (paquete, socket);
 				destruir_paquete (paquete);
 				close(socket);

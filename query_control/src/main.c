@@ -4,7 +4,7 @@
 #define ARCHIVO_DE_CONSULTAS 2
 #define PRIORIDAD_DE_CONSULTA 3
 #define CANTIDAD_ARGUMENTOS 3
-#define MOTIVO_DE_FIN_DE_QUERY 0
+
 
 /*Variables Externas*/
 t_config * configuracion = NULL;
@@ -18,6 +18,7 @@ int main(int argc, char* argv[])
 	int socket_query_control;//Por medio de este socket se establece conexion con el master
 	t_paquete * paquete;
 	int operacion;
+	t_list * lista = NULL;
 	
 	saludar("query");
 
@@ -67,11 +68,17 @@ int main(int argc, char* argv[])
     	switch (operacion) 
 		{
 			case END_QUERY:
-				t_list * lista = recibir_carga_util (socket_query_control); //Recibe el motivo de fin de consulta
+				lista = recibir_carga_util (socket_query_control); //Recibe el motivo de fin de consulta
 				/* Log mínimo y obligatorio 4 */
-				log_trace (bitacora_del_sistema, "## Query Finalizada - %s", (char *) list_get (lista, MOTIVO_DE_FIN_DE_QUERY));
+				log_trace (bitacora_del_sistema, "## Query Finalizada - %s", (char *) list_get (lista, 0));
 				list_destroy_and_destroy_elements (lista, free);
 				close(socket_query_control);				
+				break;
+			
+			case READ_QUERY:
+				lista = recibir_carga_util (socket_query_control); 
+				log_trace (bitacora_del_sistema, "## Lectura realizada: File <File:Tag>, contenido: %s", (char *) list_get (lista, 0));
+				list_destroy_and_destroy_elements (lista, free);
 				break;
 			
 			case DESCONEXION:
