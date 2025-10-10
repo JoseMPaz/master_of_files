@@ -18,6 +18,8 @@ int main(int argc, char* argv[])
 	int socket_query_control;//Por medio de este socket se establece conexion con el master
 	t_paquete * paquete;
 	int operacion;
+	
+	saludar("query");
 
 	if (argc != 1 + CANTIDAD_ARGUMENTOS)//Valida que se ingrese el ejecutable + 3 argumentos por el CLA
 	{
@@ -37,30 +39,35 @@ int main(int argc, char* argv[])
    
     /*Crea el socket como cliente hacia el servidor master*/
     socket_query_control = crear_socket (CLIENTE, config_get_string_value (configuracion, "IP_MASTER"), config_get_string_value (configuracion, "PUERTO_MASTER"));
+    /*Se conecta a master*/
     solicitar_atencion (socket_query_control, config_get_string_value (configuracion, "IP_MASTER"), config_get_string_value (configuracion, "PUERTO_MASTER"));
     
     /* Log mínimo y obligatorio 1 */
-    log_trace ( bitacora_del_sistema, 
-    			"## Conexión al Master exitosa. IP: %s, Puerto: %s", 
-    			config_get_string_value (configuracion, "IP_MASTER"), config_get_string_value (configuracion, "PUERTO_MASTER"));
+    log_trace ( bitacora_del_sistema, "## Conexión al Master exitosa. IP: %s, Puerto: %s", config_get_string_value (configuracion, "IP_MASTER"),
+    			config_get_string_value (configuracion, "PUERTO_MASTER") );
         
-	//operacion | longitud_carga_util | longitud_1 | cadena_1 | longitud_2 | cadena_2 | ... | longitud_N | cadena_N
-    paquete = crear_paquete (NEW_QUERY);
-    agregar_a_paquete (paquete,  (void *) argv[ARCHIVO_DE_CONSULTAS], strlen (argv[ARCHIVO_DE_CONSULTAS]) + 1/*por el '\0'*/);
+    // Protocolo: operacion | longitud_carga_util | longitud_1 | cadena_1 | longitud_2 | cadena_2 | ... | longitud_N | cadena_N
+	
+    // Se agrega la operacion para que master gestiene la consulta
+    paquete = crear_paquete (NEW_QUERY); 
+    // Se agrega el nombre de archivo de queries
+    agregar_a_paquete (paquete,  (void *) argv[ARCHIVO_DE_CONSULTAS], strlen (argv[ARCHIVO_DE_CONSULTAS]) + 1/*por el '\0'*/); 
+     // Se agrega la prioridad de la query
     agregar_a_paquete (paquete,  (void *) argv[PRIORIDAD_DE_CONSULTA], strlen (argv[PRIORIDAD_DE_CONSULTA]) + 1/*por el '\0'*/);
-    /* enviarle el path del archivo_query y la prioridad que estan empaquetados y se serializan al enviar*/
+    
+    /* Envia la ruta del archivo_query y la prioridad que estan empaquetados y se serializan al enviar a master*/
     enviar_paquete (paquete, socket_query_control);
     /* Log mínimo y obligatorio 2 */
     log_trace (bitacora_del_sistema, "## Solicitud de ejecución de Query: %s, prioridad:%s", argv[ARCHIVO_DE_CONSULTAS], argv[PRIORIDAD_DE_CONSULTA]);
  
     do
     {
-    	/*Se queda esperando recibir alguna operacion*/
+    	/* Se queda esperando recibir alguna operacion - Bloqueante */
     	operacion = recibir_operacion(socket_query_control); 
     	switch (operacion) 
 		{
 			case END_QUERY:
-				t_list * lista = recibir_carga_util (socket_query_control);//Recibe el motivo de fin de consulta
+				t_list * lista = recibir_carga_util (socket_query_control); //Recibe el motivo de fin de consulta
 				/* Log mínimo y obligatorio 4 */
 				log_trace (bitacora_del_sistema, "## Query Finalizada - %s", (char *) list_get (lista, MOTIVO_DE_FIN_DE_QUERY));
 				list_destroy_and_destroy_elements (lista, free);

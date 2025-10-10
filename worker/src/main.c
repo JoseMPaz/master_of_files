@@ -29,6 +29,7 @@ int main(int argc, char* argv[])
     	fprintf(stderr, "%s\n", "Error: No se pudo abrir el archivo de configuración");
     	return EXIT_FAILURE;
     }
+    
 	/*Abre el archivo que contiene el registro de eventos con el nivel que indica el archivo de configuracion*/
     bitacora_del_sistema = log_create ("query_control.log", "WORKER", false, (t_log_level) config_get_int_value (configuracion, "LOG_LEVEL"));
     /*Crea un socker para conectarse al storage*/
@@ -41,6 +42,7 @@ int main(int argc, char* argv[])
 	solicitar_atencion (socket_worker_a_storage, config_get_string_value (configuracion, "IP_STORAGE"), config_get_string_value (configuracion, "PUERTO_STORAGE"));
 	/*Se establece la conexion con master*/
 	solicitar_atencion (socket_worker_a_master, config_get_string_value (configuracion, "IP_MASTER"), config_get_string_value (configuracion, "PUERTO_MASTER"));
+	
 	/*Envio al master sus datos para que lo agende si necesita que realicen trabajo*/
 	paquete = crear_paquete (NEW_WORKER);
 	agregar_a_paquete (paquete,  (void *) argv[ID_WORKER], strlen (argv[ID_WORKER]) + 1/*por el '\0'*/);
@@ -53,12 +55,12 @@ int main(int argc, char* argv[])
 		printf ("Recibe operacion desde master");
 		switch (operacion) 
 		{
-			case RECIBIR_QUERY:
+			/*case RECIBIR_QUERY:
 				t_list * lista = recibir_carga_util (socket_worker_a_master);//Recibe la ruta de la query
 				printf ("El worker recibio la ruta de la query: %s", (char *) list_get (lista, 0));
 				list_destroy_and_destroy_elements (lista, free);
 				
-				break;
+				break;*/
 			
 			case DESCONEXION:
 				//log_error(logger, "el cliente se desconecto. Terminando servidor");

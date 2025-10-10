@@ -15,8 +15,6 @@
 #include <commons/string.h>
 #include <signal.h>
 
-#define NO_HAY_WORKER_CONECTADOS "No hay workers conectados para atender la query"
-
 typedef enum
 {
 	CLIENTE = 0,
@@ -31,7 +29,7 @@ typedef enum
 	NEW_QUERY = 3,
 	END_QUERY = 4,
 	NEW_WORKER = 5,
-	RECIBIR_QUERY = 6,
+	READ_QUERY = 6,
 	SIZE_BLOCK
 }t_operacion;
 
