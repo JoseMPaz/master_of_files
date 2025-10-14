@@ -32,18 +32,18 @@ int main(int argc, char* argv[])
     }
     
 	/*Abre el archivo que contiene el registro de eventos con el nivel que indica el archivo de configuracion*/
-    bitacora_del_sistema = log_create ("query_control.log", "WORKER", false, (t_log_level) config_get_int_value (configuracion, "LOG_LEVEL"));
+    bitacora_del_sistema = log_create ("query_control.log", "WORKER", true, (t_log_level) config_get_int_value (configuracion, "LOG_LEVEL"));
     
     /*Crea un socker para conectarse al storage*/
-	socket_worker_a_storage = crear_socket (CLIENTE	, config_get_string_value(configuracion, "IP_STORAGE")
-													, config_get_string_value(configuracion, "PUERTO_STORAGE"));
+	//socket_worker_a_storage = crear_socket (CLIENTE	, config_get_string_value(configuracion, "IP_STORAGE")
+	//												, config_get_string_value(configuracion, "PUERTO_STORAGE"));
 													
 	/*Crea un socker para conectarse al master*/
 	socket_worker_a_master = crear_socket (CLIENTE	, config_get_string_value (configuracion, "IP_MASTER")
 													, config_get_string_value (configuracion, "PUERTO_MASTER"));
 													
 	/*Se establece la conexion con storage*/
-	solicitar_atencion (socket_worker_a_storage, config_get_string_value (configuracion, "IP_STORAGE"), config_get_string_value (configuracion, "PUERTO_STORAGE"));
+	//solicitar_atencion (socket_worker_a_storage, config_get_string_value (configuracion, "IP_STORAGE"), config_get_string_value (configuracion, "PUERTO_STORAGE"));
 	/*Se establece la conexion con master*/
 	solicitar_atencion (socket_worker_a_master, config_get_string_value (configuracion, "IP_MASTER"), config_get_string_value (configuracion, "PUERTO_MASTER"));
 	
@@ -55,10 +55,13 @@ int main(int argc, char* argv[])
 	
 	while (true)
 	{
-		operacion = recibir_operacion(socket_worker_a_master); 
+		operacion = recibir_operacion(socket_worker_a_master); //Bloqueante hasta que master le envie algo
 		printf ("Recibe operacion desde master");
 		switch (operacion) 
 		{
+			case EXEC_QUERY:
+			
+				break;
 			/*case RECIBIR_QUERY:
 				t_list * lista = recibir_carga_util (socket_worker_a_master);//Recibe la ruta de la query
 				printf ("El worker recibio la ruta de la query: %s", (char *) list_get (lista, 0));

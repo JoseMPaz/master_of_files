@@ -23,6 +23,6 @@ echo "Finalizo la apertura de worker"
 
 echo "Inicio la apertura y ejecución de query"
 cd query_control
-xfce4-terminal --working-directory="$PWD" -e "bash -c './bin/query ./query_control.config query1.asm 23; exec bash'"
+xfce4-terminal --working-directory="$PWD" -e "bash -c './bin/query ./query.config query1.asm 23; exec bash'"
 cd ..
 echo "Finalizo la apertura de query"

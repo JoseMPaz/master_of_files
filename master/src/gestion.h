@@ -14,6 +14,8 @@ extern t_config * configuracion;
 extern t_log * bitacora_del_sistema;
 extern pthread_mutex_t mutex_workers;
 extern int id_global;
+extern sem_t sem_queries_ready;
+extern sem_t sem_workers_libres;
 
 /* nuevos */
 extern pthread_mutex_t mutex_id_global;

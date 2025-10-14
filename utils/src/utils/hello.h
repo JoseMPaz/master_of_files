@@ -14,6 +14,8 @@
 #include <pthread.h>
 #include <commons/string.h>
 #include <signal.h>
+#include <semaphore.h>
+
 
 typedef enum
 {
@@ -30,6 +32,7 @@ typedef enum
 	END_QUERY = 4,
 	NEW_WORKER = 5,
 	READ_QUERY = 6,
+	EXEC_QUERY = 7,
 	SIZE_BLOCK
 }t_operacion;
 

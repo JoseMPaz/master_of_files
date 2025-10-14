@@ -4,6 +4,7 @@ void * gestionar_query_worker (void * socket_de_atencion)
 {
     int socket = *(int*)socket_de_atencion; 
     t_list * lista = NULL;
+    int cant_workers;
     
     free (socket_de_atencion);//Se libera ya que su valor fue copiado en socket
        
@@ -11,44 +12,21 @@ void * gestionar_query_worker (void * socket_de_atencion)
     
     switch (operacion) 
     {
-        case NEW_WORKER:
-            lista = recibir_carga_util (socket); //Recibe el argumento que envio el worker: id
-            if (!lista || list_is_empty(lista)) {
-                // manejar error
-                if (lista) list_destroy_and_destroy_elements(lista, free);
-                close(socket);
-                return NULL;
-            }
-            
-            t_worker * new_worker = malloc(sizeof(t_worker));
-            new_worker->id = strdup(list_get(lista, 0));
-            new_worker->socket = socket;
-            new_worker->esta_libre = true;
-            
-            pthread_mutex_lock(&mutex_workers);
-            list_add(workers, new_worker);
-            pthread_mutex_unlock(&mutex_workers);
-                        
-            list_destroy_and_destroy_elements(lista, free);
-            lista = NULL;
-            break;
-
-        case NEW_QUERY:
+    	case NEW_QUERY:
             lista = recibir_carga_util (socket); //Recibe path_query y prioridad 
             
-            if (!lista) 
+            if (!lista || list_is_empty(lista)) 
             {
                 // manejar error
+                if (lista) 
+                	list_destroy_and_destroy_elements(lista, free);
                 close(socket);
                 return NULL;
             }
 
             pthread_mutex_lock(&mutex_workers);
-            int cant_workers = list_size(workers);
+            	cant_workers = list_size(workers);
             pthread_mutex_unlock(&mutex_workers);
-            
-            // Usar cant_workers para la impresión evita race
-            //printf ("NEW_QUERY -> Cantidad de worker: %d\n", cant_workers);
             
             if (cant_workers == 0) 
             {
@@ -59,76 +37,75 @@ void * gestionar_query_worker (void * socket_de_atencion)
                 close(socket);
             }
             else
-            {
-                int indice = reservar_worker_libre_y_marcar(); // busca worker libre y marca libre como falso
-                
-                // No hay worker libre ahora: encolar la query en queries_ready
+            {              
+                // Encolar la query en queries_ready
                 t_qcb * new_qcb = (t_qcb *) malloc (sizeof(t_qcb));
+                
                 new_qcb->id = generar_id (); 
+                
                 new_qcb->program_counter = 0;
                 new_qcb->socket = socket;
                 new_qcb->prioridad = strdup (list_get(lista, 0));
-                    
-                if (indice == -1)//Todos los worker estan ocupados, se encola la query
-                { 
-                    new_qcb->estado = READY;
-					new_qcb->worker_asignado = NULL;
-					
-					/*Se encola el qcb en la cola de ready*/
-                    pthread_mutex_lock(&mutex_queries);
-                    list_add ( queries_ready , new_qcb );
-                    pthread_mutex_unlock(&mutex_queries);
+                new_qcb->estado = READY;
+                new_qcb->worker_asignado = NULL;
+                 
+                pthread_mutex_lock(&mutex_queries);
+                	list_add (queries_ready, new_qcb);
+                pthread_mutex_unlock(&mutex_queries);
+                 
+                sem_post(&sem_queries_ready);
 
-                    // informar a la query que fue encolada y luego cerrar socket
-                    t_paquete * paquete = crear_paquete(END_QUERY);
-                    agregar_a_paquete(paquete, (void *) "Encolada: esperando worker libre", strlen("Encolada: esperando worker libre") + 1);
-                    enviar_paquete(paquete, socket);
-                    destruir_paquete(paquete);
-                    close(socket);
-                }
-                else
-                {
-                	new_qcb->estado = EXECUTING;
-                	pthread_mutex_lock(&mutex_workers);
-					new_qcb->worker_asignado = list_get (workers, indice); //Apunta al worker libre
-					pthread_mutex_unlock(&mutex_workers);
-                    // Ya reservamos al worker (esta_libre = false). Ahora construir el paquete para el worker
-                    //printf ("El worker libre esta en posición %d\n", indice);
-                    
-                    
-                    //t_worker * worker = list_get (workers, indice);
-                    
-                    //int socket_worker = worker->socket;
-                    //pthread_mutex_unlock(&mutex_workers);
-
-                    // Ejemplo: enviar instrucciones al worker
-                    t_paquete * paquete = crear_paquete (READ_QUERY);
-                    agregar_a_paquete (paquete, (void *) "Lectura 1", strlen ("Lectura 1") + 1); 
-                    enviar_paquete (paquete, socket);
-                    destruir_paquete (paquete);
-
-                    paquete = crear_paquete (READ_QUERY);
-                    agregar_a_paquete (paquete, (void *) "Lectura 2", strlen ("Lectura 2") + 1);  // CORREGIDO
-                    enviar_paquete (paquete, socket);
-                    destruir_paquete (paquete);
-
-                    // Notificar a la query que su petición está siendo atendida (opcional)
-                    t_paquete * ack = crear_paquete(END_QUERY);
-                    agregar_a_paquete(ack, (void *) "Worker asignado", strlen("Worker asignado")+1);
-                    enviar_paquete(ack, socket);
-                    destruir_paquete(ack);
-
-                    // cerramos socket a la query
-                    close(socket);
-
-                    // En este flujo, el worker queda ocupado (ya lo marcamos). Cuando termine
-                    // de procesar deberá informar y se deberá marcar como libre de nuevo.
-                }
-            }
-
+                pthread_mutex_lock(&mutex_workers);
+            		cant_workers = list_size(workers);
+				pthread_mutex_unlock(&mutex_workers);
+				
+                /* Log mínimo y obligatorio 1 */
+                log_trace (bitacora_del_sistema, "## Se conecta un Query Control para ejecutar la Query %s con prioridad %s multiprocesamiento %d",
+                (char *) list_get (lista, 0) , (char *) list_get (lista, 1) , cant_workers);
+                 
+			}
+			
             list_destroy_and_destroy_elements (lista, free);
             lista = NULL;
             break;
+    	
+        case NEW_WORKER:
+            lista = recibir_carga_util (socket); //Recibe el argumento que envio el worker: id
+            
+            if (!lista || list_is_empty(lista)) 
+            {
+                // manejar error
+                if (lista) 
+                	list_destroy_and_destroy_elements(lista, free);
+                close(socket);
+                return NULL;
+            }
+
+            t_worker * new_worker = malloc(sizeof(t_worker));
+            
+            new_worker->id = strdup(list_get(lista, 0));
+            new_worker->socket = socket;
+            new_worker->esta_libre = true;
+            
+            pthread_mutex_lock(&mutex_workers);
+            	list_add(workers, new_worker);
+            pthread_mutex_unlock(&mutex_workers);
+            
+            sem_post(&sem_workers_libres);
+            
+            pthread_mutex_lock(&mutex_workers);
+            	cant_workers = list_size(workers);
+            pthread_mutex_unlock(&mutex_workers);
+            sem_post (&sem_workers_libres);
+            /* Log mínimo y obligatorio 2 */
+    		log_trace (bitacora_del_sistema, "## Se conecta el Worker %s - Cantidad total de Workers: %d", (char *) list_get(lista, 0), cant_workers);
+    		
+                        
+            list_destroy_and_destroy_elements(lista, free);
+            lista = NULL;
+            break;
+
+        
 
         case DESCONEXION:
             // manejar desconexión
