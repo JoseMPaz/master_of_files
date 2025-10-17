@@ -25,14 +25,15 @@ typedef enum
 
 typedef enum
 {
-	DESCONEXION = 0,
-	MENSAJE = 1,
-	PAQUETE = 2,
-	NEW_QUERY = 3,
-	END_QUERY = 4,
-	NEW_WORKER = 5,
-	READ_QUERY = 6,
-	EXEC_QUERY = 7,
+	DESCONEXION 	= 0,
+	
+	NEW_QUERY 		= 3,
+	READ_QUERY 		= 4,
+	NEW_READ 		= 5,
+	END_QUERY 		= 6,
+	
+	NEW_WORKER 		= 7,	
+	EXEC_QUERY = 8,
 	SIZE_BLOCK
 }t_operacion;
 

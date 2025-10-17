@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
     		
     		*socket_de_atencion = socket_temporal;
     		
-    		pthread_create (&hilo_de_atencion, NULL, gestionar_query_worker, (void *) socket_de_atencion);
+    		pthread_create (&hilo_de_atencion, NULL, admitir_queries_workers, (void *) socket_de_atencion);
     		pthread_detach(hilo_de_atencion);
     	}   	
     }
