@@ -2,6 +2,7 @@
 #define _GESTION_H_
 
 #include <utils/hello.h>
+#include <limits.h>
 
 #define POSICION_ID 0
 #define NO_HAY_WORKER_CONECTADOS "No se pudo atender debido a que no hay workers conectados"

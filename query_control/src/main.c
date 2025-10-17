@@ -11,10 +11,17 @@
 t_config * configuracion = NULL;
 t_log * bitacora_del_sistema = NULL;
 int socket_master;
+char archivo_query[100];
 
 // Protocolo de mensajes: operacion | longitud_carga_util | longitud_1 | cadena_1 | longitud_2 | cadena_2 | ... | longitud_N | cadena_N
 
+void manejar_sigint(int signum);
 void manejar_sigstp(int signum);
+
+/*Descripcion:
+Se conecta a Master y le solicita un NEW_QUERY con los parametros nombre_archivo_query y prioridad
+Se queda en un bucle esperando recibir de Master una READ_QUERY o bien un END_QUERY, en ambos casos de loguea y si es un END_QUERY finaliza el bucle
+*/
 
 int main(int argc, char* argv[]) 
 {
@@ -24,7 +31,10 @@ int main(int argc, char* argv[])
 	t_list * parametros_end_query = NULL;
 	t_list * parametros_read_query = NULL;
 	
-	signal(SIGTSTP, manejar_sigstp); // atrapa Ctrl+Z
+	strcpy (archivo_query, argv[ARCHIVO_DE_CONSULTAS]);
+	
+	signal(SIGINT, manejar_sigint);   // atrapa Ctrl+C
+	signal(SIGTSTP, manejar_sigstp);  // atrapa Ctrl+Z
 	
 	saludar("query");
 
@@ -69,6 +79,9 @@ int main(int argc, char* argv[])
     log_trace (	bitacora_del_sistema, "## Solicitud de ejecución de Query: %s, prioridad:%s", 
     			argv[ARCHIVO_DE_CONSULTAS], argv[PRIORIDAD_DE_CONSULTA]);
  
+ 	/*	Aca se espera que en master el socker se encuentre en una lista query_ready y cuando hay un worker disponible 
+ 		Master le pide a Worker que lea el archivo_de_query retransmitido, worker busca en sus archivos y empieza a retransmitir 
+ 		de a una instruccion a Master y Master retransmite a query con READ_QUERY*/
     do
     {
     	/* Se queda esperando recibir una operacion por parte de Master: END_QUERY, READ_QUERY */
@@ -86,9 +99,6 @@ int main(int argc, char* argv[])
 				list_destroy_and_destroy_elements (parametros_read_query, free);
 				parametros_read_query = NULL;
 				
-				paquete = crear_paquete (NEW_READ); //Sin argumentos, para que master le diga a worker que siga ejecutando
-				enviar_paquete (paquete, socket);
-				destruir_paquete (paquete);
 				
 				break;
 				
@@ -121,7 +131,23 @@ int main(int argc, char* argv[])
 
 void manejar_sigstp(int signum) 
 {
-    printf("\n[Query] Ctrl+Z detectado, cerrando conexión...\n");
+    // Evita que el proceso se suspenda
+    signal(SIGTSTP, SIG_IGN); 
+
+    log_trace (bitacora_del_sistema, 
+        "## Query %s Finalizada - Interrupción del usuario (Ctrl+Z)", archivo_query);
+
     close(socket_master);
+    config_destroy(configuracion);
+    log_destroy(bitacora_del_sistema);
+    exit(0);
+}
+
+void manejar_sigint(int signum)
+{
+    log_trace (bitacora_del_sistema, "## Query %s Finalizada - Interrupción del usuario (Ctrl+C)", archivo_query);
+    close(socket_master);
+    config_destroy(configuracion);
+    log_destroy(bitacora_del_sistema);
     exit(0);
 }
